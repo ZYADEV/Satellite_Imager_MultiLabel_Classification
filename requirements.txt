@@ -5,7 +5,7 @@ matplotlib
 seaborn
 tensorflow
 keras
-opencv-python
+opencv-python-headless
 tqdm
 scikit-learn
 plotly
