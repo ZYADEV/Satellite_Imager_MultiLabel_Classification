@@ -141,7 +141,7 @@ def main():
 
         # Plot the image with predicted classes
         img = mpimg.imread(filename)
-        st.image(img, caption="Uploaded Image", use_column_width=True)
+        st.image(img, caption="Uploaded Image", use_container_width=True)
 
 if __name__ == "__main__":
     main()
