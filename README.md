@@ -2,6 +2,13 @@
 
 A machine learning application for multi-label classification of satellite images using deep learning techniques. This project provides an interactive Streamlit web interface for uploading and classifying satellite imagery.
 
+## 📷 Example:
+
+<div align="center">
+  <img src="satellite_image.png" alt="Satellite Image" width="45%" style="margin-right: 10px;">
+  <img src="classes.png" alt="Classification Results" width="45%">
+</div>
+
 ## 🚀 Features
 
 - **Multi-label Classification**: Classify satellite images with multiple labels simultaneously
