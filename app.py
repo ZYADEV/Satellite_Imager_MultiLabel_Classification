@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras import backend as K
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
@@ -45,9 +46,26 @@ def accuracy_score(y_true, y_pred, epsilon=1e-4):
     tn = tf.reduce_sum(tf.cast(tf.logical_not(y_true), tf.float32) * tf.cast(tf.logical_not(y_pred), tf.float32), axis=1)
 
     return (tp + tn) / (tp + tn + fp + fn + epsilon)
-# Load the model
-model_filename = 'model_vf.h5'
-loaded_model = keras.models.load_model(model_filename, custom_objects={'fbeta': fbeta, 'accuracy_score': accuracy_score})
+
+# Register custom objects globally
+tf.keras.utils.get_custom_objects().update({'fbeta': fbeta, 'accuracy_score': accuracy_score})
+
+# Load the model with error handling
+@st.cache_resource
+def load_model():
+    try:
+        model_filename = 'model_vf.h5'
+        loaded_model = keras.models.load_model(
+            model_filename, 
+            custom_objects={'fbeta': fbeta, 'accuracy_score': accuracy_score},
+            compile=False
+        )
+        return loaded_model
+    except Exception as e:
+        st.error(f"Error loading model: {str(e)}")
+        return None
+
+loaded_model = load_model()
 
 # Function to preprocess a single image
 def preprocess_image(image_path):
@@ -77,6 +95,10 @@ def predict_single_image(model, img):
 
 def main():
     st.title("Satellite Image Multi-Classification with CNN")
+    
+    if loaded_model is None:
+        st.error("Failed to load the model. Please check if the model file exists and is valid.")
+        return
 
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
@@ -107,11 +129,15 @@ def main():
         }
 
         # Map numerical labels to class names
-        predicted_classes = [classes[i] for i, label in enumerate(predictions_single_image[0]) if label.all() == 1]
+        predicted_classes = [classes[i] for i, label in enumerate(predictions_single_image[0]) if label == 1]
 
         # Display icons and titles for predicted classes
-        for predicted_class in predicted_classes:
-            st.title(f"{class_icons[predicted_class]} {predicted_class}")
+        if predicted_classes:
+            st.subheader("Predicted Classes:")
+            for predicted_class in predicted_classes:
+                st.write(f"{class_icons[predicted_class]} {predicted_class}")
+        else:
+            st.write("No classes detected with the current threshold.")
 
         # Plot the image with predicted classes
         img = mpimg.imread(filename)
